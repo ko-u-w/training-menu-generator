@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>筋トレメニュー生成</title>
+
+<style>
+/* ===== カラーテーマ（今風B） ===== */
+:root {
+  --main: #0d47a1;
+  --accent: #1565c0;
+  --light: #e3f2fd;
+  --border: #bbdefb;
+  --text: #0d1b2a;
+}
+
+body {
+  font-family: sans-serif;
+  background: #f5f7fa;
+  padding: 20px;
+  color: var(--text);
+}
+
+h1 { color: var(--main); }
+h2 { color: var(--accent); }
+
+.lead {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+/* ===== フォーム ===== */
+.form-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: var(--light);
+  max-width: 420px;
+}
+
+.form-section legend {
+  font-weight: bold;
+  padding: 0 8px;
+  color: var(--main);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-row label {
+  width: 120px;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* ===== ボタン ===== */
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  background: var(--main);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+}
+
+button:hover {
+  background: var(--accent);
+}
+
+/* ===== ステップ ===== */
+.step { display: none; }
+.step.active { display: block; }
+
+/* ===== 広告 ===== */
+.ad-space {
+  height: 90px;
+  background: #e0e0e0;
+  margin: 30px 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+/* ===== 出力 ===== */
+#result { margin-top: 30px; }
+
+.day-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.day-card h3 {
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 6px;
+  color: var(--main);
+}
+
+.part-title {
+  font-weight: bold;
+  margin-top: 10px;
+  color: var(--accent);
+}
+
+/* ===== 履歴 ===== */
+.history-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
+
+.history-header {
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--main);
+}
+
+.history-body {
+  white-space: pre-wrap;
+  font-family: monospace;
+  display: none;
+  margin-top: 8px;
+}
+
+.history-actions {
+  display: none;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.history-card.open .history-body,
+.history-card.open .history-actions {
+  display: block;
+}
+
+/* ===== スマホ ===== */
+.fixed-generate { display: none; }
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-row label {
+    width: auto;
+    margin-bottom: 4px;
+  }
+
+  .fixed-generate {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 10px;
+    text-align: center;
+    z-index: 1000;
+  }
+
+  .fixed-generate button {
+    width: 90%;
+    font-size: 18px;
+  }
+
+  body {
+    padding-bottom: 90px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>筋トレメニュー生成</h1>
+<p class="lead">
+身長・体重・年齢を入力するだけで、<br>
+あなた専用の筋トレメニューを自動生成します。
+</p>
+
+<div class="ad-space">広告エリア</div>
+
+<!-- ===== STEP1 ===== -->
+<div class="step active" id="step1">
+  <fieldset class="form-section">
+    <legend>基本情報</legend>
+
+    <div class="form-row"><label>身長</label><input id="height" type="number"></div>
+    <div class="form-row"><label>体重</label><input id="weight" type="number"></div>
+    <div class="form-row"><label>年齢</label><input id="age" type="number"></div>
+    <div class="form-row">
+      <label>性別</label>
+      <select id="gender">
+        <option value="male">男</option>
+        <option value="female">女</option>
+      </select>
+    </div>
+  </fieldset>
+  <button onclick="goStep(2)">次へ</button>
+</div>
+
+<!-- ===== STEP2 ===== -->
+<div class="step" id="step2">
+  <fieldset class="form-section">
+    <legend>トレーニング条件</legend>
+
+    <div class="form-row">
+      <label>レベル</label>
+      <select id="level">
+        <option value="beginner">初心者</option>
+        <option value="intermediate">中級者</option>
+        <option value="advanced">上級者</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>週回数</label>
+      <select id="frequency">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>時間（分）</label>
+      <input id="duration" type="number">
+    </div>
+  </fieldset>
+
+  <button onclick="goStep(1)">戻る</button>
+  <button onclick="generateMenu()">無料でメニューを作る</button>
+</div>
+
+<div class="fixed-generate">
+  <button onclick="generateMenu()">無料でメニューを作る</button>
+</div>
+
+<div id="result"></div>
+
+<div class="ad-space">広告エリア</div>
+
+<!-- ===== 説明文（仕様復元） ===== -->
+<h2>この筋トレメニュー自動生成ツールについて</h2>
+<p>
+このツールは、入力された身長・体重・年齢・トレーニング条件をもとに、
+無理のない筋トレメニューを自動で作成する無料サービスです。
+初心者から上級者まで、継続しやすい構成を目指しています。
+</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 本当に無料ですか？</strong><br>はい、完全無料で利用できます。</p>
+<p><strong>Q. 毎回同じメニューになりますか？</strong><br>
+条件が同じ場合は再現性のあるメニューになります。</p>
+<p><strong>Q. 医学的に安全ですか？</strong><br>
+一般的なトレーニング指針に基づいていますが、無理のない範囲で行ってください。</p>
+
+<h2>過去に作成したメニュー</h2>
+<div id="history"></div>
+
+<!-- ===== JS（完全維持） ===== -->
+<script>
+function goStep(n){
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+  document.getElementById("step"+n).classList.add("active");
+}
+
+
+/* ===== ここから下は【一切変更なし】 ===== */
+
+const EXERCISES = {
+  chest:{middle:[{name:"腕立て伏せ",tag:"star"},{name:"ベンチプレス",tag:"main"},{name:"ダンベルプレス",tag:"main"}],
+  upper:[{name:"インクラインベンチプレス"},{name:"インクラインダンベルプレス"}],
+  lower:[{name:"ケーブルクロスオーバー"},{name:"デクラインベンチプレス"}],
+  stretch:[{name:"ペックフライ"},{name:"ダンベルフライ"}]},
+  shoulder:{middle:[{name:"サイドレイズ",tag:"star"}],
+  front:[{name:"フロントレイズ"},{name:"バーベルショルダープレス"},{name:"ダンベルショルダープレス"}],
+  rear:[{name:"リアレイズ"},{name:"マシンリアレイズ"},{name:"ケーブルリアレイズ"}]},
+  back:{upper:[{name:"懸垂",tag:"star"},{name:"ラットプルダウン"}],
+  middle:[{name:"デッドリフト"}],
+  lower:[{name:"ベントオーバーローイング"},{name:"ケーブルローイング"},{name:"マシンシーテッドロウ"},{name:"ダンベルローイング"}]},
+  legs:{all:[{name:"スクワット",tag:"star"},{name:"バーベルスクワット",tag:"main"}],
+  front:[{name:"レッグエクステンション"}],
+  ham:[{name:"レッグカール"}]},
+  arms:{biceps_contract:[{name:"バーベルアームカール"},{name:"ダンベルアームカール"}],
+  biceps_stretch:[{name:"インクラインアームカール"}],
+  triceps_contract:[{name:"プレスダウン"},{name:"ディップス"},{name:"ナローベンチプレス"}],
+  triceps_stretch:[{name:"ケーブルフレンチプレス"},{name:"トライセプスエクステンション"}]},
+  abs:[{name:"クランチ",tag:"star"},{name:"ハンギングレッグレイズ"},{name:"アブドミナルクランチ"},{name:"アブローラー"}]
+};
+
+function calcSets({ duration, gender, bmi, age }) {
+  let sets = duration <= 30 ? 2 : 3;
+  if (gender === "male") sets += 1;
+  if (bmi > 25) sets += 1;
+  if (age >= 60) sets -= 1;
+  return Math.max(2, sets);
+}
+
+function hashCode(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h);}
+function seededRandom(seed){const x=Math.sin(seed)*10000;return x-Math.floor(x);}
+function pickOneSeeded(list,seed){return list[Math.floor(seededRandom(seed)*list.length)];}
+function pickNSeeded(list,n,seed){const copy=[...list],res=[];let s=seed;while(res.length<n&&copy.length){const idx=Math.floor(seededRandom(s++)*copy.length);res.push(copy.splice(idx,1)[0]);}return res;}
+
+function selectExercise(list,level,seed){if(level==="beginner"){return list.find(e=>e.tag==="star")||list[0];}
+const filtered=list.filter(e=>e.tag!=="star");
+return filtered.length===1?filtered[0]:pickOneSeeded(filtered,seed);}
+
+function selectChest(level,seed){return[
+selectExercise(EXERCISES.chest.middle,level,seed),
+pickOneSeeded(EXERCISES.chest.upper,seed+1),
+pickOneSeeded(EXERCISES.chest.lower,seed+2),
+pickOneSeeded(EXERCISES.chest.stretch,seed+3)
+];}
+
+function selectShoulder(level,seed){return[
+EXERCISES.shoulder.middle[0],
+pickOneSeeded(EXERCISES.shoulder.front,seed+1),
+pickOneSeeded(EXERCISES.shoulder.rear,seed+2)
+];}
+
+function selectBack(level,seed){return[
+selectExercise(EXERCISES.back.upper,level,seed),
+EXERCISES.back.middle[0],
+pickOneSeeded(EXERCISES.back.lower,seed+1)
+];}
+
+function selectLegs(level,seed){return[
+selectExercise(EXERCISES.legs.all,level,seed),
+EXERCISES.legs.front[0],
+EXERCISES.legs.ham[0]
+];}
+
+function selectArms(level,seed){return[
+pickOneSeeded(EXERCISES.arms.biceps_contract,seed),
+EXERCISES.arms.biceps_stretch[0],
+pickOneSeeded(EXERCISES.arms.triceps_contract,seed+1),
+pickOneSeeded(EXERCISES.arms.triceps_stretch,seed+2)
+];}
+
+function selectAbs(level,seed){
+if(level==="beginner"){return[EXERCISES.abs[0],pickOneSeeded(EXERCISES.abs.slice(1),seed)];}
+return pickNSeeded(EXERCISES.abs.slice(1),2,seed);
+}
+
+const split={
+2:[["chest","back","arms"],["legs","abs"]],
+3:[["chest","shoulder","abs"],["back","arms"],["legs","abs"]],
+4:[["chest","abs"],["back"],["legs","abs"],["shoulder","arms"]],
+5:[["chest","abs"],["back"],["shoulder","abs"],["legs"],["arms","abs"]]
+};
+
+function renderHistory(){
+const history=JSON.parse(localStorage.getItem("trainingHistory")||"[]");
+const container=document.getElementById("history");
+container.innerHTML="";
+history.forEach((h,i)=>{
+const card=document.createElement("div");
+card.className="history-card";
+card.innerHTML=`
+<div class="history-header">#${i+1} (${h.date}) / ${h.freq}回 / ${h.level}</div>
+<div class="history-body">${h.output}</div>
+<div class="history-actions">
+<button onclick="reloadHistory(${i})">再読込</button>
+<button onclick="deleteHistory(${i})">削除</button>
+</div>`;
+card.querySelector(".history-header").onclick=()=>card.classList.toggle("open");
+container.appendChild(card);
+});
+}
+
+function deleteHistory(i){
+const history=JSON.parse(localStorage.getItem("trainingHistory")||"[]");
+history.splice(i,1);
+localStorage.setItem("trainingHistory",JSON.stringify(history));
+renderHistory();
+}
+
+function reloadHistory(i){
+const h=JSON.parse(localStorage.getItem("trainingHistory"))[i];
+height.value=h.height;weight.value=h.weight;age.value=h.age;
+gender.value=h.gender;level.value=h.level;
+frequency.value=h.freq;duration.value=h.duration;
+result.innerText=h.output;
+}
+
+function generateMenu(){
+const heightVal=+height.value;
+const weightVal=+weight.value;
+const ageVal=+age.value;
+const genderVal=gender.value;
+const levelVal=level.value;
+const freqVal=+frequency.value;
+const durationVal=+duration.value;
+const bmi=weightVal/((heightVal/100)**2);
+const sets=calcSets({duration:durationVal,gender:genderVal,bmi,age:ageVal});
+const seed=hashCode(`${heightVal}-${weightVal}-${ageVal}-${genderVal}-${levelVal}-${freqVal}-${durationVal}`);
+result.innerHTML="";
+split[freqVal].forEach((day,i)=>{
+const card=document.createElement("div");
+card.className="day-card";
+card.innerHTML=`<h3>DAY ${i+1}</h3>`;
+day.forEach(part=>{
+card.innerHTML+=`<div class="part-title">${part.toUpperCase()}</div>`;
+let list=[];
+if(part==="chest")list=selectChest(levelVal,seed+i*10);
+if(part==="shoulder")list=selectShoulder(levelVal,seed+i*10);
+if(part==="back")list=selectBack(levelVal,seed+i*10);
+if(part==="legs")list=selectLegs(levelVal,seed+i*10);
+if(part==="arms")list=selectArms(levelVal,seed+i*10);
+if(part==="abs")list=selectAbs(levelVal,seed+i*10);
+list.forEach(e=>card.innerHTML+=`${e.name}：${sets}セット<br>`);
+});
+result.appendChild(card);
+});
+const history=JSON.parse(localStorage.getItem("trainingHistory")||"[]");
+history.unshift({date:new Date().toLocaleString(),height:heightVal,weight:weightVal,age:ageVal,
+gender:genderVal,level:levelVal,freq:freqVal,duration:durationVal,output:result.innerText});
+localStorage.setItem("trainingHistory",JSON.stringify(history));
+renderHistory();
+}
+
+window.addEventListener("DOMContentLoaded",renderHistory);
+</script>
+
+</body>
+</html>
