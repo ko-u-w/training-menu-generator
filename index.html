@@ -5,44 +5,47 @@
 <title>筋トレメニュー生成</title>
 
 <style>
-/* ===== カラーテーマ（今風B） ===== */
 :root {
-  --main: #0d47a1;
-  --accent: #1565c0;
-  --light: #e3f2fd;
-  --border: #bbdefb;
-  --text: #0d1b2a;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --primary: #3b82f6;
+  --primary-soft: #dbeafe;
+  --accent: #22c55e;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --muted: #475569;
 }
 
 body {
   font-family: sans-serif;
-  background: #f5f7fa;
+  background: var(--bg);
   padding: 20px;
   color: var(--text);
 }
 
-h1 { color: var(--main); }
-h2 { color: var(--accent); }
+h1, h2, h3 {
+  color: var(--text);
+}
 
 .lead {
   font-size: 16px;
+  color: var(--muted);
   margin-bottom: 20px;
 }
 
-/* ===== フォーム ===== */
 .form-section {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 16px;
   margin-bottom: 20px;
-  background: var(--light);
+  background: var(--card);
   max-width: 420px;
 }
 
 .form-section legend {
   font-weight: bold;
   padding: 0 8px;
-  color: var(--main);
+  color: var(--primary);
 }
 
 .form-row {
@@ -59,77 +62,66 @@ h2 { color: var(--accent); }
 .form-row select {
   flex: 1;
   padding: 6px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  border-radius: 4px;
 }
 
-/* ===== ボタン ===== */
 button {
   padding: 10px 16px;
   font-size: 16px;
   cursor: pointer;
-  background: var(--main);
-  color: #fff;
+  border-radius: 8px;
   border: none;
-  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  margin-right: 8px;
 }
 
 button:hover {
-  background: var(--accent);
+  opacity: 0.9;
 }
 
-/* ===== ステップ ===== */
 .step { display: none; }
 .step.active { display: block; }
 
-/* ===== 広告 ===== */
 .ad-space {
   height: 90px;
-  background: #e0e0e0;
+  background: var(--primary-soft);
   margin: 30px 0;
-  border-radius: 6px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: var(--primary);
 }
 
-/* ===== 出力 ===== */
 #result { margin-top: 30px; }
 
 .day-card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--card);
+  border-radius: 10px;
   padding: 15px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.day-card h3 {
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 6px;
-  color: var(--main);
+  border-left: 6px solid var(--accent);
 }
 
 .part-title {
   font-weight: bold;
   margin-top: 10px;
-  color: var(--accent);
+  color: var(--primary);
 }
 
-/* ===== 履歴 ===== */
 .history-card {
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--border);
   padding: 12px;
   margin-bottom: 16px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .history-header {
   font-weight: bold;
   cursor: pointer;
-  color: var(--main);
 }
 
 .history-body {
@@ -150,7 +142,6 @@ button:hover {
   display: block;
 }
 
-/* ===== スマホ ===== */
 .fixed-generate { display: none; }
 
 @media (max-width: 600px) {
@@ -170,7 +161,7 @@ button:hover {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #fff;
+    background: var(--card);
     border-top: 1px solid var(--border);
     padding: 10px;
     text-align: center;
@@ -193,17 +184,15 @@ button:hover {
 
 <h1>筋トレメニュー生成</h1>
 <p class="lead">
-身長・体重・年齢を入力するだけで、<br>
-あなた専用の筋トレメニューを自動生成します。
+  身長・体重・年齢を入力するだけで、<br>
+  あなた専用の筋トレメニューを自動生成します。
 </p>
 
 <div class="ad-space">広告エリア</div>
 
-<!-- ===== STEP1 ===== -->
 <div class="step active" id="step1">
   <fieldset class="form-section">
     <legend>基本情報</legend>
-
     <div class="form-row"><label>身長</label><input id="height" type="number"></div>
     <div class="form-row"><label>体重</label><input id="weight" type="number"></div>
     <div class="form-row"><label>年齢</label><input id="age" type="number"></div>
@@ -218,11 +207,9 @@ button:hover {
   <button onclick="goStep(2)">次へ</button>
 </div>
 
-<!-- ===== STEP2 ===== -->
 <div class="step" id="step2">
   <fieldset class="form-section">
     <legend>トレーニング条件</legend>
-
     <div class="form-row">
       <label>レベル</label>
       <select id="level">
@@ -231,7 +218,6 @@ button:hover {
         <option value="advanced">上級者</option>
       </select>
     </div>
-
     <div class="form-row">
       <label>週回数</label>
       <select id="frequency">
@@ -241,13 +227,11 @@ button:hover {
         <option value="5">5</option>
       </select>
     </div>
-
     <div class="form-row">
       <label>時間（分）</label>
       <input id="duration" type="number">
     </div>
   </fieldset>
-
   <button onclick="goStep(1)">戻る</button>
   <button onclick="generateMenu()">無料でメニューを作る</button>
 </div>
@@ -260,25 +244,41 @@ button:hover {
 
 <div class="ad-space">広告エリア</div>
 
-<!-- ===== 説明文（仕様復元） ===== -->
-<h2>この筋トレメニュー自動生成ツールについて</h2>
-<p>
-このツールは、入力された身長・体重・年齢・トレーニング条件をもとに、
-無理のない筋トレメニューを自動で作成する無料サービスです。
-初心者から上級者まで、継続しやすい構成を目指しています。
-</p>
-
-<h2>よくある質問</h2>
-<p><strong>Q. 本当に無料ですか？</strong><br>はい、完全無料で利用できます。</p>
-<p><strong>Q. 毎回同じメニューになりますか？</strong><br>
-条件が同じ場合は再現性のあるメニューになります。</p>
-<p><strong>Q. 医学的に安全ですか？</strong><br>
-一般的なトレーニング指針に基づいていますが、無理のない範囲で行ってください。</p>
-
 <h2>過去に作成したメニュー</h2>
 <div id="history"></div>
 
-<!-- ===== JS（完全維持） ===== -->
+<!-- ===== 追加文章（そのまま） ===== -->
+
+<section id="about">
+  <h2>この筋トレメニュー自動生成ツールについて</h2>
+  <p>
+    このサイトは、目的や条件に応じて筋トレメニューを自動で作成できる
+    無料のWebツールです。
+    筋トレ初心者の方から、日々のメニュー作りを効率化したい方まで、
+    幅広く利用できることを目的としています。
+  </p>
+  <p>
+    特別な登録やログインは不要で、誰でもすぐに利用できます。
+  </p>
+</section>
+
+<section id="faq">
+  <h2>よくある質問</h2>
+  <h3>Q. 利用料金はかかりますか？</h3>
+  <p>A. 完全無料で利用できます。</p>
+  <h3>Q. 筋トレ初心者でも使えますか？</h3>
+  <p>A. はい。初心者の方でも無理のないメニューが生成される設計になっています。</p>
+  <h3>Q. 毎日使っても問題ありませんか？</h3>
+  <p>A. 問題ありませんが、体調や疲労度に応じて無理のない範囲でご利用ください。</p>
+</section>
+
+<section id="policy">
+  <h2>免責事項・プライバシーポリシー</h2>
+  <p>当サイトに掲載されている情報は一般的なトレーニング情報をもとに作成されています。</p>
+  <p>利用によって生じたいかなる損害についても責任を負いかねます。</p>
+  <p>今後Google AdSense等の広告を利用する可能性があります。</p>
+</section>
+
 <script>
 function goStep(n){
   document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
